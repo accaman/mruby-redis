@@ -47,4 +47,7 @@ MRuby::Gem::Specification.new('mruby-redis') do |spec|
 
   spec.add_dependency "mruby-sleep"
   spec.add_dependency "mruby-pointer", :github => 'matsumotory/mruby-pointer'
+
+  # Using backquote to test evalsha
+  spec.add_test_dependency "mruby-io"
 end

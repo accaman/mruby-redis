@@ -1348,6 +1348,38 @@ static mrb_value mrb_redis_setnx(mrb_state *mrb, mrb_value self)
   return mrb_redis_execute_command(mrb, self, argc, argv, lens, &rule);
 }
 
+static mrb_value mrb_redis_evalsha(mrb_state *mrb, mrb_value self)
+{
+  mrb_value *mrb_argv, array;
+  mrb_int argc = 0;
+  int i, ai;
+  const char **argv;
+  size_t *argvlen;
+  mrb_int argc_current;
+  redisContext *rc;
+  redisReply *rr;
+
+  mrb_get_args(mrb, "*", &mrb_argv, &argc);
+  argc++;
+
+  argv = (const char **)alloca(argc * sizeof(char *));
+  argvlen = (size_t *)alloca(argc * sizeof(size_t));
+
+  argv[0] = "EVALSHA";
+  argvlen[0] = sizeof("EVALSHA") - 1;
+
+  ai = mrb_gc_arena_save(mrb);
+  for (argc_current = 1; argc_current < argc; argc_current++) {
+    mrb_value curr = mrb_str_to_str(mrb, mrb_argv[argc_current - 1]);
+    argv[argc_current] = RSTRING_PTR(curr);
+    argvlen[argc_current] = RSTRING_LEN(curr);
+    mrb_gc_arena_restore(mrb, ai);
+  }
+
+  ReplyHandlingRule rule = DEFAULT_REPLY_HANDLING_RULE;
+  return mrb_redis_execute_command(mrb, self, argc, argv, argvlen, &rule);
+}
+
 static inline int mrb_redis_create_command_noarg(mrb_state *mrb, const char *cmd, const char **argv, size_t *lens)
 {
   argv[0] = cmd;
@@ -1540,6 +1572,7 @@ void mrb_mruby_redis_gem_init(mrb_state *mrb)
   mrb_define_method(mrb, redis, "watch", mrb_redis_watch, (MRB_ARGS_REQ(1) | MRB_ARGS_REST()));
   mrb_define_method(mrb, redis, "unwatch", mrb_redis_unwatch, MRB_ARGS_NONE());
   mrb_define_method(mrb, redis, "setnx", mrb_redis_setnx, MRB_ARGS_REQ(2));
+  mrb_define_method(mrb, redis, "evalsha", mrb_redis_evalsha, (MRB_ARGS_REQ(3) | MRB_ARGS_REST()));
   DONE;
 }
 

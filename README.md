@@ -451,6 +451,13 @@ client.zrevrank "hs", "a"
 client.zscore "hs", "a"
 ```
 
+
+#### `Redis#evalsha` [doc](https://redis.io/commands/evalsha)
+
+```ruby
+client.evalsha "a42059b356c875f0717db19a51f6aaca9ae659ea", 2, "key1", "key2", "first", "second"
+```
+
 See [`example/redis.rb`](https://github.com/matsumoto-r/mruby-redis/blob/master/example/redis.rb) for more details.
 
 ## LICENSE

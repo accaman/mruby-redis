@@ -5,6 +5,11 @@
 HOST         = "127.0.0.1"
 PORT         = 6379
 SECURED_PORT = 6380
+LUA_SCRIPT   = "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}"
+
+def to_sha(lua_script)
+  `redis-cli -h #{ HOST } -p #{ PORT } SCRIPT LOAD "#{ lua_script }"`.chomp
+end
 
 assert("Redis#ping") do
   r = Redis.new HOST, PORT
@@ -1413,4 +1418,13 @@ assert("Redis#auth") do
 
   assert_equal r.auth("secret"), "OK"
   assert_equal "PONG", r.ping
+end
+
+assert("Redis#evalsha") do
+  client = Redis.new HOST, PORT
+  results = client.evalsha(to_sha(LUA_SCRIPT), 2, "key1", "key2", "first", "second")
+
+  %w(key1 key2 first second).each_with_index do |expect, i|
+    assert_equal expect, results[i]
+  end
 end
